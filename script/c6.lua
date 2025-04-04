@@ -36,7 +36,7 @@ end
 -- Check summon type and that the flag is present
 function s.defcon(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
-    return (c:IsSummonType(SUMMON_TYPE_ADVANCE) or c:IsSummonType(SUMMON_TYPE_MSET))
+    return (c:IsSummonType(SUMMON_TYPE_TRIBUTE) or c:IsSummonType(SUMMON_TYPE_MSET))
         and c:GetFlagEffect(id) > 0
 end
 
