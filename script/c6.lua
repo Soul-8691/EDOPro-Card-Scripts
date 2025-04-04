@@ -1,40 +1,49 @@
 local s,id=GetID()
 function s.initial_effect(c)
-    -- Summon Success: if Tribute Summoned and label set by material check equals 1, gain 500 DEF
+    -- (1) Trigger on Summon Success (Tribute Summon)
     local e1=Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
     e1:SetCode(EVENT_SUMMON_SUCCESS)
     e1:SetCondition(s.defcon)
     e1:SetOperation(s.defop)
     c:RegisterEffect(e1)
-    -- Material Check: set a label on e1 if any tribute material has 1800 or more DEF
+    -- (2) Trigger on Set Success (Tribute Set)
+    local e1b=Effect.CreateEffect(c)
+    e1b:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
+    e1b:SetCode(EVENT_MSET)
+    e1b:SetCondition(s.defcon)
+    e1b:SetOperation(s.defop)
+    c:RegisterEffect(e1b)
+    -- (3) Material Check: store a flag if any tribute material has 1800 or more DEF
     local e2=Effect.CreateEffect(c)
     e2:SetType(EFFECT_TYPE_SINGLE)
     e2:SetCode(EFFECT_MATERIAL_CHECK)
     e2:SetValue(s.valcheck)
-    e2:SetLabelObject(e1)
     c:RegisterEffect(e2)
 end
 
--- Check tribute materials: if any have 1800+ DEF, set label to 1; otherwise, 0.
+-- Material Check: if any tribute material has 1800 or more DEF, store flag=1 on the card.
 function s.valcheck(e,c)
     local g=c:GetMaterial()
-    local flag=0
+    local flag = 0
     if g:IsExists(function(tc) return tc:GetDefense()>=1800 end,1,nil) then
-        flag=1
+        flag = 1
     end
-    e:GetLabelObject():SetLabel(flag)
+    c:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD,0,1,flag)
 end
 
--- Condition: This monster must be Tribute Summoned and the label from the material check equals 1.
+-- Condition: If the card was either Tribute Summoned (face-up) or Tribute Set (face-down)
+-- and the stored flag equals 1, then the condition is met.
 function s.defcon(e,tp,eg,ep,ev,re,r,rp)
-    return e:GetHandler():IsSummonType(SUMMON_TYPE_ADVANCE) and e:GetLabel()==1
+    local c=e:GetHandler()
+    return (c:IsSummonType(SUMMON_TYPE_ADVANCE) or c:IsSummonType(SUMMON_TYPE_MSET))
+       and c:GetFlagEffectLabel(id)==1
 end
 
 -- Operation: Increase this monster's DEF by 500.
 function s.defop(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
-    if c:IsFaceup() and c:IsRelateToEffect(e) then
+    if c:IsRelateToEffect(e) and c:IsFaceup() then
         local e1=Effect.CreateEffect(c)
         e1:SetType(EFFECT_TYPE_SINGLE)
         e1:SetCode(EFFECT_UPDATE_DEFENSE)
