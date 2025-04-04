@@ -19,7 +19,7 @@ end
 -- Store a flag if any tributed monster had 1800+ DEF
 function s.regop(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
-    local g=Duel.GetTributeGroup()            -- The group of tributed monsters
+    local g=Duel.GetTributeGroup(c)            -- The group of tributed monsters
     if g and g:IsExists(Card.IsDefenseAbove,1,nil,1800) then
         -- If at least one tributed monster has >=1800 DEF, set a flag
         c:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD_DISABLE,0,1)
