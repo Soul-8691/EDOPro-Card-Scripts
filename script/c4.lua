@@ -1,9 +1,9 @@
---Replace FLAME_ID, DARKFLARE_ID, and DARKFLARE_SWORDSMAN_ID with the actual card IDs.
 local s,id=GetID()
 function s.initial_effect(c)
     ----------------------------------------------------------------
-    -- (1) Each "Flame Swordsman", "Dark Flare Knight", and
-    --     "Dark Flare Swordsman" you control (except this card) gains 300 ATK
+    -- (1) Other "Flame Swordsman", "Dark Flare Knight", and
+    --     "Dark Flare Swordsman" monsters you control gain 300 ATK.
+    --     (Other copies of this card are included via c:IsCode(id))
     ----------------------------------------------------------------
     local e1=Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_FIELD)
@@ -16,7 +16,7 @@ function s.initial_effect(c)
     
     ----------------------------------------------------------------
     -- (2) Discard this card from your hand; Special Summon 1
-    --     "Flame Swordsman" from your Extra Deck
+    --     "Flame Swordsman" from your Extra Deck.
     ----------------------------------------------------------------
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,0))
@@ -31,7 +31,9 @@ function s.initial_effect(c)
     
     ----------------------------------------------------------------
     -- (3) Tribute this card; Special Summon 1 "Dark Flare Knight"
-    --     from your Extra Deck
+    --     from your Extra Deck.
+    --     You can only activate this effect if you have not Summoned
+    --     any other monsters this turn.
     ----------------------------------------------------------------
     local e3=Effect.CreateEffect(c)
     e3:SetDescription(aux.Stringid(id,1))
@@ -39,20 +41,21 @@ function s.initial_effect(c)
     e3:SetType(EFFECT_TYPE_IGNITION)
     e3:SetRange(LOCATION_MZONE)
     e3:SetCountLimit(1,{id,1})
+    e3:SetCondition(s.nosummoncond)
     e3:SetCost(s.spcost2)
     e3:SetTarget(s.sptg2)
     e3:SetOperation(s.spop2)
     c:RegisterEffect(e3)
 end
 
---(1) ATK Gain Target
+-- (1) ATK Gain Target: Other specific monsters (including other copies of itself)
 function s.atktg(e,c)
     return c:IsFaceup()
-       and (c:IsCode(45231177) or c:IsCode(13722870) or c:IsCode(4))
+       and (c:IsCode(45231177) or c:IsCode(13722870) or c:IsCode(id))
        and c~=e:GetHandler()
 end
 
---(2) Discard from hand cost
+-- (2) Cost for discarding this card from hand
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return e:GetHandler():IsDiscardable() end
     Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
@@ -65,7 +68,7 @@ end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then
         return Duel.GetLocationCountFromEx(tp)>0
-           and Duel.IsExistingMatchingCard(s.spfilter1,tp,LOCATION_EXTRA,0,1,nil,e,tp)
+            and Duel.IsExistingMatchingCard(s.spfilter1,tp,LOCATION_EXTRA,0,1,nil,e,tp)
     end
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
@@ -78,7 +81,13 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
     end
 end
 
---(3) Tribute this card
+-- (3) Condition: You must not have performed any Normal or Special Summons this turn.
+function s.nosummoncond(e,tp,eg,ep,ev,re,r,rp)
+    return Duel.GetActivityCount(tp,ACTIVITY_SUMMON)==0 
+       and Duel.GetActivityCount(tp,ACTIVITY_SPSUMMON)==0
+end
+
+-- (3) Tribute cost: Release this card.
 function s.spcost2(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return e:GetHandler():IsReleasable() end
     Duel.Release(e:GetHandler(),REASON_COST)
@@ -91,7 +100,7 @@ end
 function s.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then
         return Duel.GetLocationCountFromEx(tp,tp,e:GetHandler())>0
-           and Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_EXTRA,0,1,nil,e,tp)
+            and Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_EXTRA,0,1,nil,e,tp)
     end
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
