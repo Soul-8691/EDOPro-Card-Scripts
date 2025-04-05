@@ -42,6 +42,16 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
     e3:SetValue(s.not_indestructible)
     e3:SetReset(RESET_PHASE+PHASE_END)
     Duel.RegisterEffect(e3,tp)
+
+    -- Override opponent's damage immunity (e.g. from Dragon Revival Rhapsody)
+    local e6=Effect.CreateEffect(c)
+    e6:SetType(EFFECT_TYPE_FIELD)
+    e6:SetCode(EFFECT_CHANGE_DAMAGE)
+    e6:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_IGNORE_IMMUNE)
+    e6:SetTargetRange(0,1) -- opponent
+    e6:SetValue(function(e,re,val,r,rp,rc) return val end)
+    e6:SetReset(RESET_PHASE+PHASE_END)
+    Duel.RegisterEffect(e6,tp)
 end
 
 function s.bp_allow(e,re,rp)
