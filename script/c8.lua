@@ -13,17 +13,17 @@ end
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
     local c=e:GetHandler()
 
-    -- Force allow Battle Phase
+    -- Force override of EFFECT_CANNOT_BP
     local e1=Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_FIELD)
     e1:SetCode(EFFECT_CANNOT_BP)
     e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_IGNORE_IMMUNE)
     e1:SetTargetRange(1,0)
-    e1:SetValue(function(eff,re,rp) return false end)
+    e1:SetValue(s.bp_allow)
     e1:SetReset(RESET_PHASE+PHASE_END)
     Duel.RegisterEffect(e1,tp)
 
-    -- Force allow Battle Damage
+    -- Allow dealing battle damage
     local e2=Effect.CreateEffect(c)
     e2:SetType(EFFECT_TYPE_FIELD)
     e2:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
@@ -33,7 +33,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
     e2:SetReset(RESET_PHASE+PHASE_END)
     Duel.RegisterEffect(e2,tp)
 
-    -- Force allow monsters to be destroyed by battle
+    -- Make monsters vulnerable to battle destruction
     local e3=Effect.CreateEffect(c)
     e3:SetType(EFFECT_TYPE_FIELD)
     e3:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
@@ -42,24 +42,12 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
     e3:SetValue(s.not_indestructible)
     e3:SetReset(RESET_PHASE+PHASE_END)
     Duel.RegisterEffect(e3,tp)
+end
 
-    -- Disable all cards currently applying EFFECT_CANNOT_BP
-    local g=Duel.GetMatchingGroup(s.has_bp_lock_effect,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-    for tc in g:Iter() do
-        local e4=Effect.CreateEffect(c)
-        e4:SetType(EFFECT_TYPE_SINGLE)
-        e4:SetCode(EFFECT_DISABLE)
-        e4:SetReset(RESET_PHASE+PHASE_END)
-        tc:RegisterEffect(e4)
-    end
+function s.bp_allow(e,re,rp)
+    return false -- force allow Battle Phase
 end
 
 function s.not_indestructible(e,c)
-    return false
-end
-
--- Checks if a card is applying EFFECT_CANNOT_BP to the player
-function s.has_bp_lock_effect(c)
-    local ef_list={c:GetCardEffect(EFFECT_CANNOT_BP)}
-    return #ef_list > 0
+    return false -- monsters can be destroyed by battle
 end
