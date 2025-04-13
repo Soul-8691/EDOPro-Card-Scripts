@@ -1,6 +1,13 @@
 local s,id=GetID()
 function s.initial_effect(c)
-    -- (1) Discard 1 card from your field to Special Summon a Level 4 or lower monster from hand this turn
+    -- (1) Activate directly from hand
+    local e0=Effect.CreateEffect(c)
+    e0:SetType(EFFECT_TYPE_ACTIVATE)
+    e0:SetCode(EVENT_FREE_CHAIN)
+    e0:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    c:RegisterEffect(e0)
+
+    -- (2) Discard 1 card from your field to Special Summon a Level 4 or lower monster from hand this turn
     local e1=Effect.CreateEffect(c)
     e1:SetDescription(aux.Stringid(id,0))
     e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
