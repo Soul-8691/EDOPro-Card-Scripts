@@ -21,17 +21,27 @@ end
 
 -- Cost: Discard 1 card from your field (can be face-up or face-down)
 function s.sacrificecost(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsExistingMatchingCard(Card.IsOnField,tp,LOCATION_ONFIELD,0,1,nil) end
+    if chk==0 then 
+        return Duel.IsExistingMatchingCard(Card.IsOnField,tp,LOCATION_ONFIELD,0,1,nil) 
+    end
+    -- Select a card on the field to discard
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
     local g=Duel.SelectMatchingCard(tp,Card.IsOnField,tp,LOCATION_ONFIELD,0,1,1,nil)
+    
+    -- Debug log to check selected card
+    Duel.Hint(HINT_MSG_LOG,tp,"Discarding card: " .. g:GetFirst():GetName())
+    
+    -- Send the selected card to the Graveyard
     Duel.SendtoGrave(g,REASON_COST)
 end
 
 -- Target: Special Summon a Level 4 or lower monster from hand
 function s.sactg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then
+        -- Check if there is a Level 4 or lower monster in the hand
         return Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND,0,1,nil,e,tp)
     end
+    -- Show info about the Special Summon
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
 
@@ -42,9 +52,16 @@ end
 
 -- Operation: Special Summon the monster
 function s.saop(e,tp,eg,ep,ev,re,r,rp)
+    -- Debug: Log the operation being triggered
+    Duel.Hint(HINT_MSG_LOG,tp,"Special Summon operation triggered")
+
+    -- Select a Level 4 or lower monster from hand
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
     local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
+
+    -- Debug: Check if the card selection worked
     if #g>0 then
+        Duel.Hint(HINT_MSG_LOG,tp,"Special Summoning: " .. g:GetFirst():GetName())
         Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
     end
 end
