@@ -1,51 +1,44 @@
 local s,id=GetID()
 function s.initial_effect(c)
-    -- Activate this Normal Spell
+    -- (1) Discard 1 card from your field to Special Summon a Level 4 or lower monster from hand this turn
     local e1=Effect.CreateEffect(c)
-    e1:SetCategory(0)
-    e1:SetType(EFFECT_TYPE_ACTIVATE)
-    e1:SetCode(EVENT_FREE_CHAIN)
-    e1:SetOperation(s.activate)
+    e1:SetDescription(aux.Stringid(id,0))
+    e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e1:SetType(EFFECT_TYPE_IGNITION)
+    e1:SetRange(LOCATION_SZONE)
+    e1:SetCountLimit(1,id)
+    e1:SetCost(s.sacrificecost)
+    e1:SetTarget(s.sactg)
+    e1:SetOperation(s.saop)
     c:RegisterEffect(e1)
 end
 
--- When this Spell is activated, register a lingering effect until End Phase.
-function s.activate(e,tp,eg,ep,ev,re,r,rp)
-    -- Lingering effect: whenever you successfully Normal Summon a Level 4 or lower monster,
-    -- you may tribute (discard) 1 monster from your hand to flag that summon as a tribute summon.
-    local e1=Effect.CreateEffect(e:GetHandler())
-    e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-    e1:SetCode(EVENT_SUMMON_SUCCESS)
-    e1:SetOperation(s.lingering_op)
-    e1:SetReset(RESET_PHASE+PHASE_END)
-    Duel.RegisterEffect(e1,tp)
-    Duel.Hint(HINT_CARD,0,id)
+-- Cost: Discard 1 card from your field
+function s.sacrificecost(e,tp,eg,ep,ev,re,r,rp,chk)
+    if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_ONFIELD,0,1,nil) end
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
+    local g=Duel.SelectMatchingCard(tp,Card.IsFaceup,tp,LOCATION_ONFIELD,0,1,1,nil)
+    Duel.SendtoGrave(g,REASON_COST)
 end
 
--- Filter for monsters in your hand that can be tributed (adjust if you want a different cost)
-function s.tribute_filter(c)
-    return c:IsType(TYPE_MONSTER) and c:IsDiscardable()
+-- Target: Special Summon a Level 4 or lower monster from hand
+function s.sactg(e,tp,eg,ep,ev,re,r,rp,chk)
+    if chk==0 then
+        return Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND,0,1,nil,e,tp)
+    end
+    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
 
--- This operation triggers when a monster is Normal Summoned.
-function s.lingering_op(e,tp,eg,ep,ev,re,r,rp)
-    local g=eg:Filter(function(tc)
-        return tc:IsControler(tp) and tc:IsLevelBelow(4)
-            and tc:IsSummonType(SUMMON_TYPE_NORMAL)
-            and not tc:HasFlagEffect(id)
-    end, nil)
-    for tc in aux.Next(g) do
-        if Duel.SelectYesNo(tp,aux.Stringid(id,0)) then
-            if Duel.IsExistingMatchingCard(s.tribute_filter,tp,LOCATION_HAND,0,1,nil) then
-                Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
-                local dg=Duel.SelectMatchingCard(tp,s.tribute_filter,tp,LOCATION_HAND,0,1,1,nil)
-                if #dg>0 then
-                    Duel.SendtoGrave(dg,REASON_COST+REASON_DISCARD)
-                    -- Flag the summoned monster so that it is treated as having been Tribute Summoned.
-                    tc:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD,0,1)
-                    -- (Optionally, you could apply additional effects here to simulate a Tribute Summon.)
-                end
-            end
-        end
+-- Filter: Level 4 or lower monster
+function s.spfilter(c,e,tp)
+    return c:IsLevelBelow(4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+end
+
+-- Operation: Special Summon the monster
+function s.saop(e,tp,eg,ep,ev,re,r,rp)
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+    local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
+    if #g>0 then
+        Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
     end
 end
