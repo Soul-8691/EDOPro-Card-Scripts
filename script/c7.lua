@@ -20,11 +20,11 @@ function s.initial_effect(c)
     c:RegisterEffect(e1)
 end
 
--- Cost: Discard 1 card from your field
+-- Cost: Discard 1 card from your field (can be face-down)
 function s.sacrificecost(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_ONFIELD,0,1,nil) end
+    if chk==0 then return Duel.IsExistingMatchingCard(Card.IsOnField,tp,LOCATION_ONFIELD,0,1,nil) end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
-    local g=Duel.SelectMatchingCard(tp,Card.IsFaceup,tp,LOCATION_ONFIELD,0,1,1,nil)
+    local g=Duel.SelectMatchingCard(tp,Card.IsOnField,tp,LOCATION_ONFIELD,0,1,1,nil)
     Duel.SendtoGrave(g,REASON_COST)
 end
 
