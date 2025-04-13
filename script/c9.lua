@@ -33,10 +33,15 @@ function s.atktg(e,c)
     return c:IsCode(6285791) and c:IsFaceup()
 end
 
+function s.spfiltercon(c)
+    return c:IsFaceup() and c:IsCode(6285791)
+end
+
 -- Can only be used if you control a face-up Wicked Worm Beast
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-    return Duel.IsExistingMatchingCard(s.atktg,tp,LOCATION_MZONE,0,1,nil)
+    return Duel.IsExistingMatchingCard(s.spfiltercon,tp,LOCATION_MZONE,0,1,nil)
 end
+
 
 -- Tribute 1 Wicked Worm Beast to Special Summon Level 5/6 monster from hand
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
