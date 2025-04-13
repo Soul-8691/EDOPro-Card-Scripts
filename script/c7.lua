@@ -1,6 +1,6 @@
 local s,id=GetID()
 function s.initial_effect(c)
-    -- Activate: Discard 1 card on your side of the field; Special Summon 1 Level 4 or lower monster from hand
+    -- Activate: Send 1 monster you control to the GY; Special Summon 1 Level 4 or lower monster from hand
     local e1=Effect.CreateEffect(c)
     e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
     e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,14 +11,19 @@ function s.initial_effect(c)
     c:RegisterEffect(e1)
 end
 
--- Cost: Send 1 card you control (face-up or face-down) to the GY
+-- Cost: Send 1 monster you control (face-up or face-down) to the GY
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then
-        return Duel.IsExistingMatchingCard(nil,tp,LOCATION_ONFIELD,0,1,nil)
+        return Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_MZONE,0,1,nil)
     end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)
-    local g=Duel.SelectMatchingCard(tp,nil,tp,LOCATION_ONFIELD,0,1,1,nil)
+    local g=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_MZONE,0,1,1,nil)
     Duel.SendtoGrave(g,REASON_COST)
+end
+
+-- Only monsters can be sent as cost
+function s.costfilter(c)
+    return c:IsType(TYPE_MONSTER)
 end
 
 -- Target a Level 4 or lower monster in your hand to Special Summon
