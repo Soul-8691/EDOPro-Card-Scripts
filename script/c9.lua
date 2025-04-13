@@ -23,11 +23,24 @@ function s.initial_effect(c)
     e2:SetTarget(s.tribute_target)
     e2:SetValue(s.tribute_limit)
     c:RegisterEffect(e2)
+
+    -- (3) Prevent "The Wicked Worm Beast" from returning to hand
+    local e3=Effect.CreateEffect(c)
+    e3:SetType(EFFECT_TYPE_FIELD)
+    e3:SetCode(EFFECT_SPIRIT_DONOT_RETURN)
+    e3:SetRange(LOCATION_FZONE)
+    e3:SetTargetRange(LOCATION_MZONE,0)
+    e3:SetTarget(s.noreturn)
+    c:RegisterEffect(e3)
+end
+
+function s.noreturn(e,c)
+    return c:IsCode(6205579)
 end
 
 -- Target only "The Wicked Worm Beast"
 function s.atktg(e,c)
-    return c:IsCode(06205579) -- Card ID for The Wicked Worm Beast
+    return c:IsFaceup() and c:IsCode(6205579) -- Corrected format (no leading 0)
 end
 
 -- Apply tribute limit override to The Wicked Worm Beast
