@@ -4,7 +4,6 @@ function s.initial_effect(c)
     local e0=Effect.CreateEffect(c)
     e0:SetType(EFFECT_TYPE_ACTIVATE)
     e0:SetCode(EVENT_FREE_CHAIN)
-    e0:SetProperty(EFFECT_FLAG_CARD_TARGET)
     c:RegisterEffect(e0)
 
     -- (2) Discard 1 card from your field to Special Summon a Level 4 or lower monster from hand this turn
@@ -20,7 +19,7 @@ function s.initial_effect(c)
     c:RegisterEffect(e1)
 end
 
--- Cost: Discard 1 card from your field (can be face-down)
+-- Cost: Discard 1 card from your field (can be face-up or face-down)
 function s.sacrificecost(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingMatchingCard(Card.IsOnField,tp,LOCATION_ONFIELD,0,1,nil) end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
