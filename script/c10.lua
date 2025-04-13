@@ -19,7 +19,7 @@ end
 
 -- Fusion material must be Sea Serpent or a card with "Sea Horse" in its name
 function s.matfilter(c,fc,sumtype,tp)
-    return c:IsRace(RACE_SEASERPENT,fc,sumtype,tp) or c:IsName("Sea Horse")
+    return c:IsRace(RACE_SEASERPENT,fc,sumtype,tp) or c:IsCode(54332792) or c:IsCode(17444133) or c:IsCode(48049769) or c:IsCode(36492575)
 end
 
 -- Cost: Discard 1 Fish, Sea Serpent, Thunder, or Aqua
