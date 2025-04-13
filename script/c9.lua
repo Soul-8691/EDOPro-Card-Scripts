@@ -29,37 +29,39 @@ function s.initial_effect(c)
     c:RegisterEffect(e2)
 end
 
+-- ATK boost target: "The Wicked Worm Beast"
 function s.atktg(e,c)
     return c:IsCode(6285791) and c:IsFaceup()
 end
 
-function s.spfiltercon(c)
+-- Helper filter: face-up "The Wicked Worm Beast"
+function s.wormfilter(c)
     return c:IsFaceup() and c:IsCode(6285791)
 end
 
 -- Can only be used if you control a face-up Wicked Worm Beast
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-    return Duel.IsExistingMatchingCard(s.spfiltercon,tp,LOCATION_MZONE,0,1,nil)
+    return Duel.IsExistingMatchingCard(s.wormfilter,tp,LOCATION_MZONE,0,1,nil)
 end
 
+-- Filter: Level 5 or 6 monster that can be Special Summoned
+function s.spfilter(c,e,tp)
+    return c:IsLevelAbove(5) and c:IsLevelBelow(6)
+        and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+end
 
 -- Tribute 1 Wicked Worm Beast to Special Summon Level 5/6 monster from hand
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then
-        return Duel.IsExistingMatchingCard(s.atktg,tp,LOCATION_MZONE,0,1,nil)
+        return Duel.IsExistingMatchingCard(s.wormfilter,tp,LOCATION_MZONE,0,1,nil)
             and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND,0,1,nil,e,tp)
     end
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
 
--- Filter: Level 5 or 6 monster
-function s.spfilter(c,e,tp)
-    return c:IsLevelAbove(5) and c:IsLevelBelow(6) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-end
-
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)
-    local tribute=Duel.SelectMatchingCard(tp,s.atktg,tp,LOCATION_MZONE,0,1,1,nil):GetFirst()
+    local tribute=Duel.SelectMatchingCard(tp,s.wormfilter,tp,LOCATION_MZONE,0,1,1,nil):GetFirst()
     if not tribute or Duel.Release(tribute,REASON_COST)==0 then return end
 
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
