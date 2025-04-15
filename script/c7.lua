@@ -1,50 +1,40 @@
+-- Tribal Chant
 local s,id=GetID()
 function s.initial_effect(c)
-    -- Activate: Send 1 monster you control to the GY; Special Summon 1 Level 4 or lower monster from hand
+    -- Activate
     local e1=Effect.CreateEffect(c)
-    e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
     e1:SetType(EFFECT_TYPE_ACTIVATE)
     e1:SetCode(EVENT_FREE_CHAIN)
-    e1:SetCost(s.cost)
-    e1:SetTarget(s.target)
     e1:SetOperation(s.activate)
     c:RegisterEffect(e1)
 end
-
--- Cost: Send 1 monster you control (face-up or face-down) to the GY
-function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then
-        return Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_MZONE,0,1,nil)
-    end
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)
-    local g=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_MZONE,0,1,1,nil)
-    Duel.SendtoGrave(g,REASON_COST)
+function s.efilter(e,re)
+    -- Filter for effects to bypass
+    return re:IsHasEffect(EFFECT_CANNOT_BP) or
+           re:IsHasEffect(EFFECT_CANNOT_ATTACK_ANNOUNCE) or
+           re:IsHasEffect(EFFECT_NO_BATTLE_DAMAGE) or
+           re:IsHasEffect(EFFECT_INDESTRUCTABLE_BATTLE)
 end
-
--- Only monsters can be sent as cost
-function s.costfilter(c)
-    return c:IsType(TYPE_MONSTER)
-end
-
--- Target a Level 4 or lower monster in your hand to Special Summon
-function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then
-        return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-            and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND,0,1,nil,e,tp)
-    end
-    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
-end
-
--- Filter for Level 4 or lower monster
-function s.spfilter(c,e,tp)
-    return c:IsLevelBelow(4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-end
-
--- Special Summon from hand
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-    local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
-    if #g>0 then
-        Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
-    end
+    -- Allow Battle Phase entry
+    local e1=Effect.CreateEffect(e:GetHandler())
+    e1:SetType(EFFECT_TYPE_FIELD)
+    e1:SetCode(EFFECT_IMMUNE_EFFECT)
+    e1:SetTargetRange(0,0)
+    e1:SetTarget(s.bptarget)
+    e1:SetValue(s.efilter)
+    e1:SetReset(RESET_PHASE+PHASE_END)
+    Duel.RegisterEffect(e1,tp)
+    -- Allow monsters to attack, deal damage, and destroy
+    local e2=Effect.CreateEffect(e:GetHandler())
+    e2:SetType(EFFECT_TYPE_FIELD)
+    e2:SetCode(EFFECT_IMMUNE_EFFECT)
+    e2:SetTargetRange(LOCATION_MZONE,0)
+    e2:SetValue(s.efilter)
+    e2:SetReset(RESET_PHASE+PHASE_END)
+    Duel.RegisterEffect(e2,tp)
+end
+function s.bptarget(e,c)
+    -- Target the player for Battle Phase immunity
+    return e:GetHandlerPlayer()
 end
