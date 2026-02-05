@@ -1,4 +1,4 @@
---Citizen Recruitment
+--Civilian Recruitment
 --Continuous Spell
 local s,id=GetID()
 
