@@ -12,14 +12,14 @@ function s.initial_effect(c)
 	e0:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e0)
 
-	--All "The Wicked Worm Beast" gain 400 ATK
+	--All "The Wicked Worm Beast" gain 500 ATK
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetRange(LOCATION_FZONE)
 	e1:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
 	e1:SetTarget(s.atktg)
-	e1:SetValue(400)
+	e1:SetValue(500)
 	c:RegisterEffect(e1)
 
 	--"The Wicked Worm Beast" can attack all opponent's monsters
