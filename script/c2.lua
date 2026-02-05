@@ -3,7 +3,7 @@
 local s,id=GetID()
 
 -- "The Wicked Worm Beast"
-local WORM_BEAST_CODE=62
+local WORM_BEAST_CODE=6285791
 
 function s.initial_effect(c)
 	--Activate
